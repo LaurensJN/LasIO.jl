@@ -135,7 +135,7 @@ for vlr in srsheader.variable_length_records
 # @test all(x -> x === 0x00, srsheader.variable_length_records[2].data)
 # @test all(x -> x === 0x00, srsheader.variable_length_records[3].data)
 
-#set the SRS
+#set the SRS. Note: this will not change points, but merely set SRS-metadata.
 defineSRS(srsheader,4326,["GeoTIFF","WKT"])
 save(srsfile_out, srsheader, srspoints)
 

@@ -1,3 +1,4 @@
+workspace()
 __precompile__()
 
 module LasIO
@@ -44,7 +45,10 @@ export
     red,
     green,
     blue,
-    RGB
+    RGB,
+
+    #set header SRS
+    defineSRS
 
 include("vlrs.jl")
 include("header.jl")

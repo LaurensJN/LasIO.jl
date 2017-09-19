@@ -1,10 +1,6 @@
 using PeatUtils
-using FileIO
-using LasIO
-using Base.Test
 
 import Base.length
-export readData,defineSRS,deconstructVLRData,length
 
 struct sKeyEntry
     wKeyID::UInt16
@@ -29,9 +25,9 @@ struct GeoAsciiParamsTag
     AsciiParams::String
 end
 
-length(data::LasIO.sGeoKeys) = 2*4*Int64(data.wNumberOfKeys)+8 #2 bytes per element
-length(data::LasIO.GeoDoubleParamsTag) = length(data.DoubleParams)*8
-length(data::LasIO.GeoAsciiParamsTag) = 256
+length(data::sGeoKeys) = 2*4*Int64(data.wNumberOfKeys)+8 #2 bytes per element
+length(data::GeoDoubleParamsTag) = length(data.DoubleParams)*8
+length(data::GeoAsciiParamsTag) = 256
 
 function constructVLR(EPSG, format)
     reserved = 0xAABB

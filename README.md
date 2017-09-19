@@ -25,3 +25,13 @@ The compressed LAZ format is supported, but requires the user to make sure the `
 using FileIO, LasIO
 header, points = load("test.laz")
 ```
+
+## SRS support
+With use of GDAL, there is extra functionality regarding spatial reference systems. As long as has the following properties, the SRS can be changed, using only the EPSG-code:
+
+GTModel: Projected
+
+GTRaster: PixelIsArea
+
+ProjLinearUnits: Linear Meter
+

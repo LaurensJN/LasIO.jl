@@ -1,5 +1,3 @@
-using PeatUtils
-
 import Base.length
 
 struct sKeyEntry

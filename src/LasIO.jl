@@ -7,6 +7,7 @@ using FileIO
 using FixedPointNumbers
 using ColorTypes
 using GeometryTypes # for conversion
+using GDAL
 
 export
     # Types
@@ -55,6 +56,7 @@ include("header.jl")
 include("point.jl")
 include("util.jl")
 include("fileio.jl")
+include("PeatUtils.jl")
 include("srs.jl")
 
 function __init__()

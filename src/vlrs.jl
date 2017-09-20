@@ -7,9 +7,8 @@ struct LasVariableLengthRecord
     user_id::AbstractString
     record_id::UInt16
     description::AbstractString
-    data::Vector{UInt8}
+    data
 end
-
 
 # Read a variable length metadata record from a stream.
 #
@@ -24,7 +23,7 @@ function Base.read(io::IO, ::Type{LasVariableLengthRecord}, extended::Bool=false
     record_id = read(io, UInt16)
     record_data_length = extended ? read(io, UInt64) : read(io, UInt16)
     description = readstring(io, 32)
-    data = read(io, record_data_length)
+    data = deconstructVLRData(io, Int64(record_id), Int64(record_data_length))
     LasVariableLengthRecord(
         reserved,
         user_id,
@@ -41,7 +40,7 @@ function Base.write(io::IO, vlr::LasVariableLengthRecord, extended::Bool=false)
     record_data_length = extended ? UInt64(length(vlr.data)) : UInt16(length(vlr.data))
     write(io, record_data_length)
     writestring(io, vlr.description, 32)
-    write(io, vlr.data)
+    writeFromExistingVLR(io, vlr.data)
     nothing
 end
 

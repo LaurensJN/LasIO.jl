@@ -103,6 +103,18 @@ rm(writefile)
 srsfile = joinpath(workdir, "srs.las")
 srsfile_out = joinpath(workdir, "srs-out.las")
 srsheader, srspoints = load(srsfile)
+for record in srsheader.variable_length_records
+    @test record.reserved === 0xaabb
+    @test record.user_id == "LASF_Projection"
+    @test typeof(record.description) == String
+    if record.record_id == 34735
+        @test record.data.wKeyDirectoryVersion == UInt16(1)
+        @test record.data.wKeyRevision == UInt16(1)
+        @test record.data.wMinorRevision == UInt16(0)
+        @test record.data.wNumberOfKeys == UInt(length((record.data.pKey)))
+        @test typeof(record.data.pKey) == Vector{LasIO.sKeyEntry}
+    end
+end
 @test srsheader.version_major == 1
 @test srsheader.version_minor == 0
 @test srsheader.data_format_id == 1
@@ -110,17 +122,25 @@ srsheader, srspoints = load(srsfile)
 @test isa(srsheader.variable_length_records, Vector{LasVariableLengthRecord})
 for vlr in srsheader.variable_length_records
     @test vlr.reserved === 0xaabb
-    @test vlr.user_id == "LASF_Projection"
-    @test vlr.description == ""
+    @test vlr.user_id == "LASF_Projection"		+     @test vlr.user_id == "LASF_Projection"
+    @test vlr.description == ""		+     @test vlr.description == ""
 end
 
 @test srsheader.variable_length_records[1].record_id == 34735  # GeoKeyDirectoryTag
 @test srsheader.variable_length_records[2].record_id == 34736  # GeoDoubleParamsTag
 @test srsheader.variable_length_records[3].record_id == 34737  # GeoAsciiParamsTag
-@test srsheader.variable_length_records[1].data[1:4] == [0x01,0x00,0x01,0x00]
-@test all(x -> x === 0x00, srsheader.variable_length_records[2].data)
-@test all(x -> x === 0x00, srsheader.variable_length_records[3].data)
+# Doesn't work anymore, data is changed into something with meaning
+# @test srsheader.variable_length_records[1].data[1:4] == [0x01,0x00,0x01,0x00]
+# @test all(x -> x === 0x00, srsheader.variable_length_records[2].data)
+# @test all(x -> x === 0x00, srsheader.variable_length_records[3].data)
+
+#set the SRS. Note: this will not change points, but merely set SRS-metadata.
+defineSRS(srsheader,4326,["GeoTIFF","WKT"])
 
 save(srsfile_out, srsheader, srspoints)
-@test hash(read(srsfile)) == hash(read(srsfile_out))
+
+@test srsheader.variable_length_records[1].record_id == 34735
+@test srsheader.variable_length_records[2].record_id == 2112
+
+#@test hash(read(srsfile)) == hash(read(srsfile_out))rm(srsfile_out)
 rm(srsfile_out)

@@ -56,7 +56,6 @@ include("header.jl")
 include("point.jl")
 include("util.jl")
 include("fileio.jl")
-include("PeatUtils.jl")
 include("srs.jl")
 
 function __init__()

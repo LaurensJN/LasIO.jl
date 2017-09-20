@@ -152,19 +152,41 @@ function deconstructVLRData(io, record_id, length::Int=0)
     end
 end
 
-# function readData(io, record_id::Int)
-#     d = deconstructVLRData(io, record_id)
-#     if record_id == 34725
-#         println(string("\tGeoKeyDirectoryTag version ",d.wKeyDirectoryVersion,"."
-#                 ,d.wKeyRevision,".",d.wMinorRevision," number of keys ",d.wNumberOfKeys))
-#         for i in 1:d.wValue_Offset
-#             println(string("\tkey ",d.pKey[i].wKeyID," tiff_tag_location ",d.pKey[i].wTIFFTagLocation,
-#                 "count ",d.pKey[i].wCount," value_offset ",d.pKey[i].wValue_Offset))
-#         end
-#     elseif record_id == 34736
-#         println(io, string("\tParameters = "),d.DoubleParams)
-#     elseif record_id == 34737
-#         println(io, string("\tASCII = "),d.AsciiParams)
-#     end
-#     return d
-# end
+"Get the WKT of an Integer EPSG code"
+function epsg2wkt(epsg::Nullable{Int})
+    if isnull(epsg)
+        return "" # missing projections are represented as empty strings
+    else
+        epsgcode = get(epsg)
+        srs = GDAL.newspatialreference(C_NULL)
+        GDAL.importfromepsg(srs, epsgcode)
+        wktptr = Ref{Ptr{UInt8}}()
+        GDAL.exporttowkt(srs, wktptr)
+        return unsafe_string(wktptr[])
+    end
+end
+
+epsg2wkt(epsg::Integer) = epsg2wkt(Nullable{Int}(epsg))
+
+"""For EPSG strings like "4326" or "EPSG:4326" """
+function epsg2wkt(epsg::String)
+    if isempty(epsg)
+        return ""
+    end
+    i = findlast(epsg, ':') + 1 # also works if : is not there
+    epsgcode = Nullable{Int}(parse(Int, epsg[i:end]))
+    epsg2wkt(epsgcode)
+end
+
+"Get the Nullable{Int} EPSG code from a WKT string"
+function wkt2epsg(wkt::String)
+    if isempty(wkt)
+        return Nullable{Int}() # no projection
+    else
+        # no projection
+        srs = GDAL.newspatialreference(C_NULL)
+        GDAL.importfromwkt(srs, [wkt])
+        epsg = parse(Int, GDAL.getauthoritycode(srs, C_NULL))
+        return Nullable{Int}(epsg)
+    end
+end
